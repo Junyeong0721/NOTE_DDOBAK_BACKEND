@@ -2,6 +2,7 @@ package kr.study.ddobak.common;
 
 import kr.study.ddobak.note.InvalidContentException;
 import kr.study.ddobak.note.NoteNotFoundException;
+import kr.study.ddobak.ocr.InvalidImageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,6 +22,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidContentException.class)
     public ResponseEntity<ErrorResponse> handleInvalidContent(InvalidContentException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException e) {
         return error(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
