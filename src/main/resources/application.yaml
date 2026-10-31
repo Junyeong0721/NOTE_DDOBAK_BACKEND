@@ -1,6 +1,8 @@
 server:
   # 8080은 VMware 네트워크 서비스(vmnat.exe)가 쓰고 있어서 8081을 쓴다.
   port: 8081
+  # 이 PC는 공인 IP라서 외부에서 직접 접속하지 못하게 이 PC 안에서만 연다. (프론트는 Vite 프록시로 접근)
+  address: 127.0.0.1
 
 spring:
   application:

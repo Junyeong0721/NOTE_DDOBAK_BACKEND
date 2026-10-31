@@ -28,6 +28,7 @@
 | IntelliJ `does not contain a Gradle build` | 지운 빈 폴더(`ddobak`)를 IntelliJ가 계속 열고 있었음 | 프로젝트 닫고 `ddobak-backend-springboot`를 다시 열기 |
 | AI가 GitHub에 push 실패 (403) | 커넥터 연결만으로는 부족, 저장소에 Claude GitHub 앱 설치 필요 | GitHub 앱을 두 저장소에 설치 |
 | `bootRun` 시 `Port 8080 was already in use` | VMware 네트워크 서비스(`vmnat.exe`)가 8080 사용 (`netstat -ano \| findstr :8080` → `tasklist`로 확인) | 서비스는 그대로 두고 서버 포트를 8081로 변경, Vite 프록시도 8081로 |
+| iPad에서 PC 개발 서버에 접속 불가 | PC는 KT 모뎀에 직접 연결(공인 IP `118.34.x.x`), iPad는 공유기 내부망(`172.30.1.x`)이라 서로 다른 네트워크 | Cloudflare 임시 터널(`cloudflared tunnel --url http://localhost:5173`)로 HTTPS 주소 발급, 서버는 공인 IP로 노출되지 않게 `127.0.0.1`에서만 열기. 실행은 `start-dev.bat` 한 번으로 |
 
 ## 내가 이해한 핵심 3줄
 1. 오류 메시지의 마지막 줄부터 읽는다. `Port 8080 was already in use`는 코드 문제가 아니라 환경 문제였고, `netstat -ano | findstr :8080`으로 PID를 찾고 `tasklist`로 프로그램(VMware `vmnat.exe`)을 확인한 뒤, 그 서비스를 끄는 대신 내 서버 포트를 바꿨다.
