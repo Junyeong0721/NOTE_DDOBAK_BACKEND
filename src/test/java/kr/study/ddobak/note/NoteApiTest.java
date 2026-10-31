@@ -91,6 +91,39 @@ class NoteApiTest {
     }
 
     @Test
+    void create_contentNotObject_returns400() throws Exception {
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
+                        .content(body("메모", "123")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("필기 데이터 형식이 올바르지 않습니다."));
+    }
+
+    @Test
+    void create_contentWithoutPages_returns400() throws Exception {
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
+                        .content(body("메모", "{\"version\":1}")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("필기 데이터 형식이 올바르지 않습니다."));
+    }
+
+    @Test
+    void create_contentWithoutVersion_returns400() throws Exception {
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
+                        .content(body("메모", "{\"pages\":[]}")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("필기 데이터 형식이 올바르지 않습니다."));
+    }
+
+    @Test
+    void create_contentWithPageSize_isAccepted() throws Exception {
+        String content = "{\"version\":1,\"page\":{\"width\":1000,\"height\":1414},\"pages\":[{\"strokes\":[]}]}";
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
+                        .content(body("메모", content)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.content").value(content));
+    }
+
+    @Test
     void create_malformedBody_returns400() throws Exception {
         mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\": \"메모\", "))

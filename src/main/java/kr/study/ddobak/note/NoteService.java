@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 @Service
@@ -51,11 +52,21 @@ public class NoteService {
         return noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
     }
 
-    /** 필기 데이터는 프론트가 만든 JSON이므로, 저장 전에 JSON으로 읽히는지만 확인한다. */
+    /**
+     * 필기 데이터는 프론트가 만든 JSON이다. 저장 전에 최소 형식만 확인한다:
+     * JSON 객체이고, 숫자 version과 배열 pages가 있어야 한다. (획 내용은 프론트가 책임진다)
+     */
     private void validateContent(String content) {
+        JsonNode root;
         try {
-            jsonMapper.readTree(content);
+            root = jsonMapper.readTree(content);
         } catch (JacksonException e) {
+            throw new InvalidContentException();
+        }
+        boolean valid = root != null && root.isObject()
+                && root.path("version").isNumber()
+                && root.path("pages").isArray();
+        if (!valid) {
             throw new InvalidContentException();
         }
     }
