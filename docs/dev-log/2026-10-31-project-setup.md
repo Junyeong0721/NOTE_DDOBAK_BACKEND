@@ -26,6 +26,7 @@
 | ESLint를 골랐는데 Oxlint로 설치됨 | 위 오류로 린터 교체 단계가 중단됨 | Oxlint 그대로 사용 (동작에는 영향 없음) |
 | IntelliJ `does not contain a Gradle build` | 지운 빈 폴더(`ddobak`)를 IntelliJ가 계속 열고 있었음 | 프로젝트 닫고 `ddobak-backend-springboot`를 다시 열기 |
 | AI가 GitHub에 push 실패 (403) | 커넥터 연결만으로는 부족, 저장소에 Claude GitHub 앱 설치 필요 | GitHub 앱을 두 저장소에 설치 |
+| `bootRun` 시 `Port 8080 was already in use` | VMware 네트워크 서비스(`vmnat.exe`)가 8080 사용 (`netstat -ano \| findstr :8080` → `tasklist`로 확인) | 서비스는 그대로 두고 서버 포트를 8081로 변경, Vite 프록시도 8081로 |
 
 ## 내가 이해한 핵심 3줄
 1. (직접 작성)

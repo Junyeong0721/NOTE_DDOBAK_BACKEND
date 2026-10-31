@@ -4,7 +4,7 @@
 
 **Goal:** 노트를 저장·조회·수정·삭제하는 Spring Boot REST API를 만들고, React(Vite) 앱이 PC와 iPad 양쪽에서 그 API를 호출하는 것까지 확인한다.
 
-**Architecture:** 저장소 2개. 백엔드 `ddobak-backend-springboot`(GitHub `NOTE_DDOBAK_BACKEND`), 프론트 `ddobak-frontend-react`(GitHub `NOTE_DDOBAK_FRONTEND`). 이 계획과 개발 기록(`docs/`)은 백엔드 저장소에 둔다. 노트의 필기 데이터(`content`)는 프론트가 만든 JSON 문자열을 백엔드가 그대로 저장한다(백엔드는 JSON 형식인지만 검사). 개발 중에는 Vite 개발 서버가 `/api` 요청을 `localhost:8080`으로 프록시하므로 CORS 설정이 필요 없고, iPad에서도 같은 주소로 동작한다.
+**Architecture:** 저장소 2개. 백엔드 `ddobak-backend-springboot`(GitHub `NOTE_DDOBAK_BACKEND`), 프론트 `ddobak-frontend-react`(GitHub `NOTE_DDOBAK_FRONTEND`). 이 계획과 개발 기록(`docs/`)은 백엔드 저장소에 둔다. 노트의 필기 데이터(`content`)는 프론트가 만든 JSON 문자열을 백엔드가 그대로 저장한다(백엔드는 JSON 형식인지만 검사). 개발 중에는 Vite 개발 서버가 `/api` 요청을 `localhost:8081`으로 프록시하므로 CORS 설정이 필요 없고, iPad에서도 같은 주소로 동작한다.
 
 **Tech Stack:** Java 21, Spring Boot 4.1.2 (Gradle - Groovy), Spring Web, Spring Data JPA, Validation, Lombok, DevTools, H2(1주차 임시 DB), React 19 + Vite 8(JavaScript), Oxlint, Vitest
 
@@ -14,7 +14,7 @@
 
 - Java 21, Spring Boot 4.1.2, Gradle 9.8.2 - Groovy. 패키지는 `kr.study.ddobak`. 설정 파일은 `application.yaml`.
 - 개발 OS는 Windows. 명령은 PowerShell 기준(`.\gradlew.bat`).
-- 모든 API는 `/api` 아래. 오류 응답 본문은 항상 `{"message": "<한국어 설명>"}`.
+- 백엔드 포트는 8081 (8080은 VMware `vmnat.exe`가 사용). 모든 API는 `/api` 아래. 오류 응답 본문은 항상 `{"message": "<한국어 설명>"}`.
 - 1주차 DB는 H2 파일 모드(`./data/ddobak`). 테스트는 인메모리 H2(`src/test/resources/application.yaml`)를 써서 개발 데이터를 지우지 않는다. MySQL 전환은 이후 계획에서 한다.
 - 노트 제목: 공백 불가, 최대 100자. `content`: 필수, 유효한 JSON 문자열.
 - 새 노트의 기본 `content`: `{"version":1,"pages":[{"strokes":[]}]}`
@@ -41,13 +41,13 @@
 - Create: `docs/superpowers/plans/2026-10-31-week1-note-api.md` (이 계획)
 
 **Interfaces:**
-- Produces: `http://localhost:8080`에서 실행되는 앱, 파일 DB `./data/ddobak`, H2 콘솔 `/h2-console`
+- Produces: `http://localhost:8081`에서 실행되는 앱, 파일 DB `./data/ddobak`, H2 콘솔 `/h2-console`
 
 - [ ] **Step 1: 설정 파일 작성** — 메인은 `jdbc:h2:file:./data/ddobak`, `ddl-auto: update`, H2 콘솔 on. 테스트는 `jdbc:h2:mem:ddobak-test`, `ddl-auto: create-drop`.
 - [ ] **Step 2: 개발 기록 템플릿** — 날짜 / 만든 기능 / AI에게 준 요청 / 받은 결과 / 오류와 해결 / 내가 이해한 핵심 3줄.
 - [ ] **Step 3: 확인**
   Run: `.\gradlew.bat test` → Expected: `BUILD SUCCESSFUL`
-  Run: `.\gradlew.bat bootRun` → Expected: `http://localhost:8080/h2-console` 접속, JDBC URL `jdbc:h2:file:./data/ddobak`로 로그인 가능
+  Run: `.\gradlew.bat bootRun` → Expected: `http://localhost:8081/h2-console` 접속, JDBC URL `jdbc:h2:file:./data/ddobak`로 로그인 가능
 - [ ] **Step 4: Commit** `chore: configure H2 and add dev log`
 
 ---
@@ -267,7 +267,7 @@ git commit -m "feat: add list, update, delete note API"
 
 - [ ] **Step 2: 프록시와 외부 접속 설정 (`vite.config.js`)**
 
-`server.host: true`(같은 와이파이의 iPad 접속 허용), `server.proxy: { '/api': 'http://localhost:8080' }`.
+`server.host: true`(같은 와이파이의 iPad 접속 허용), `server.proxy: { '/api': 'http://localhost:8081' }`.
 
 - [ ] **Step 3: 실패하는 테스트 작성 (`notes.test.js`)**
 
