@@ -1,3 +1,14 @@
 spring:
   application:
     name: ddobak
+  datasource:
+    url: jdbc:h2:file:./data/ddobak
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  h2:
+    console:
+      enabled: true

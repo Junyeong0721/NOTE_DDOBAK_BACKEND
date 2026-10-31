@@ -1,0 +1,12 @@
+# 테스트 전용 설정: 인메모리 DB를 써서 개발용 파일 DB(./data/ddobak)를 건드리지 않는다.
+spring:
+  application:
+    name: ddobak
+  datasource:
+    url: jdbc:h2:mem:ddobak-test;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
