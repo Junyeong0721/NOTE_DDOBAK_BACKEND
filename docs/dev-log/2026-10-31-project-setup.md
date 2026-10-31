@@ -16,6 +16,7 @@
 - 설정: Gradle-Groovy / Java 21 / Spring Boot 4.1.2 / YAML
 - 의존성: Spring Web, Data JPA, Validation, Lombok, DevTools, H2, MySQL Driver (Spring Security는 제외: 넣으면 모든 API가 기본으로 잠김)
 - 저장소는 백엔드·프론트 2개로 분리
+- iPad 설치 형태는 홈 화면 웹앱(PWA)으로 결정: Mac이 없고 무료 원칙이라, React Native는 연 $99 없이는 Expo Go 안에서만 실행되고 Capacitor는 Mac이 필요함
 
 ## 오류와 해결
 | 오류 | 원인 | 해결 |
@@ -29,6 +30,6 @@
 | `bootRun` 시 `Port 8080 was already in use` | VMware 네트워크 서비스(`vmnat.exe`)가 8080 사용 (`netstat -ano \| findstr :8080` → `tasklist`로 확인) | 서비스는 그대로 두고 서버 포트를 8081로 변경, Vite 프록시도 8081로 |
 
 ## 내가 이해한 핵심 3줄
-1. (직접 작성)
-2. 
-3. 
+1. 오류 메시지의 마지막 줄부터 읽는다. `Port 8080 was already in use`는 코드 문제가 아니라 환경 문제였고, `netstat -ano | findstr :8080`으로 PID를 찾고 `tasklist`로 프로그램(VMware `vmnat.exe`)을 확인한 뒤, 그 서비스를 끄는 대신 내 서버 포트를 바꿨다.
+2. 테스트용 DB와 개발용 DB는 분리한다. 테스트가 매번 `deleteAll()`로 데이터를 비우기 때문에, 같은 DB를 쓰면 개발하면서 만든 노트가 테스트를 돌릴 때마다 사라진다. `src/test/resources/application.yaml`로 테스트만 인메모리 H2를 쓰게 했다.
+3. Vite 프록시를 쓰면 CORS 설정이 필요 없다. 브라우저는 항상 같은 주소(5173)로 `/api`를 요청하고, Vite가 뒤에서 백엔드(8081)로 넘겨주기 때문에 브라우저 입장에서는 다른 출처(origin)로 가는 요청이 아니다. 그래서 iPad에서도 같은 코드로 동작한다.
