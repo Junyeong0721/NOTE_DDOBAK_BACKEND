@@ -1,6 +1,8 @@
 package kr.study.ddobak.common;
 
+import kr.study.ddobak.folder.FolderNotFoundException;
 import kr.study.ddobak.note.InvalidContentException;
+import kr.study.ddobak.note.InvalidThumbnailException;
 import kr.study.ddobak.note.NoteNotFoundException;
 import kr.study.ddobak.ocr.InvalidImageException;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoteNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NoteNotFoundException e) {
         return error(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(FolderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleFolderNotFound(FolderNotFoundException e) {
+        return error(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidThumbnailException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidThumbnail(InvalidThumbnailException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(InvalidContentException.class)

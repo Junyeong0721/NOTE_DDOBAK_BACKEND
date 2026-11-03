@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,6 +41,11 @@ public class NoteController {
     @PutMapping("/{id}")
     public NoteResponse update(@PathVariable Long id, @Valid @RequestBody NoteRequest req) {
         return noteService.update(id, req);
+    }
+
+    @PatchMapping("/{id}/folder")
+    public NoteSummary moveToFolder(@PathVariable Long id, @RequestBody NoteFolderRequest req) {
+        return noteService.moveToFolder(id, req.folderId());
     }
 
     @DeleteMapping("/{id}")
