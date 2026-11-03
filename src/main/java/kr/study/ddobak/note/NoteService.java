@@ -1,6 +1,8 @@
 package kr.study.ddobak.note;
 
 import java.util.List;
+import kr.study.ddobak.folder.FolderNotFoundException;
+import kr.study.ddobak.folder.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -14,14 +16,21 @@ import tools.jackson.databind.json.JsonMapper;
 @Transactional(readOnly = true)
 public class NoteService {
 
+    static final String THUMBNAIL_PREFIX = "data:image/png;base64,";
+    static final int MAX_THUMBNAIL_LENGTH = 300_000;
+
     private final NoteRepository noteRepository;
+    private final FolderRepository folderRepository;
     private final JsonMapper jsonMapper;
 
     @Transactional
     public NoteResponse create(NoteRequest req) {
         validateContent(req.content());
-        Note saved = noteRepository.save(new Note(req.title(), req.content()));
-        return NoteResponse.from(saved);
+        validateThumbnail(req.thumbnail());
+        validateFolder(req.folderId());
+        Note note = new Note(req.title(), req.content(), req.folderId());
+        note.changeThumbnail(req.thumbnail());
+        return NoteResponse.from(noteRepository.save(note));
     }
 
     public NoteResponse get(Long id) {
@@ -37,10 +46,23 @@ public class NoteService {
     @Transactional
     public NoteResponse update(Long id, NoteRequest req) {
         validateContent(req.content());
+        validateThumbnail(req.thumbnail());
         Note note = findNote(id);
         note.update(req.title(), req.content());
+        if (req.thumbnail() != null) {
+            note.changeThumbnail(req.thumbnail());
+        }
         noteRepository.flush(); // updatedAt(@PreUpdate)을 응답에 반영하기 위해 즉시 반영
         return NoteResponse.from(note);
+    }
+
+    @Transactional
+    public NoteSummary moveToFolder(Long id, Long folderId) {
+        Note note = findNote(id);
+        validateFolder(folderId);
+        note.moveToFolder(folderId);
+        noteRepository.flush();
+        return NoteSummary.from(note);
     }
 
     @Transactional
@@ -50,6 +72,19 @@ public class NoteService {
 
     private Note findNote(Long id) {
         return noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+    }
+
+    private void validateFolder(Long folderId) {
+        if (folderId != null && !folderRepository.existsById(folderId)) {
+            throw new FolderNotFoundException(folderId);
+        }
+    }
+
+    private void validateThumbnail(String thumbnail) {
+        if (thumbnail != null
+                && (!thumbnail.startsWith(THUMBNAIL_PREFIX) || thumbnail.length() > MAX_THUMBNAIL_LENGTH)) {
+            throw new InvalidThumbnailException();
+        }
     }
 
     /**

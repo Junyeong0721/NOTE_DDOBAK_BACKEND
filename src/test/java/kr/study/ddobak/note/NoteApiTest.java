@@ -2,13 +2,18 @@ package kr.study.ddobak.note;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import java.util.HashMap;
 import java.util.Map;
+import kr.study.ddobak.folder.Folder;
+import kr.study.ddobak.folder.FolderColor;
+import kr.study.ddobak.folder.FolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +31,7 @@ class NoteApiTest {
 
     @Autowired MockMvc mvc;
     @Autowired NoteRepository repository;
+    @Autowired FolderRepository folderRepository;
     @Autowired JsonMapper jsonMapper;
 
     @BeforeEach
@@ -245,6 +251,128 @@ class NoteApiTest {
     @Test
     void delete_unknownId_returns404() throws Exception {
         mvc.perform(delete("/api/notes/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("노트를 찾을 수 없습니다. id=999999"));
+    }
+
+    // ---------- 폴더·썸네일 ----------
+
+    static final String THUMB = "data:image/png;base64,iVBORw0KGgo=";
+
+    String json(Map<String, Object> map) {
+        return jsonMapper.writeValueAsString(map);
+    }
+
+    Map<String, Object> noteMap(String title, Long folderId, String thumbnail) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("title", title);
+        m.put("content", EMPTY_CONTENT);
+        m.put("folderId", folderId);
+        m.put("thumbnail", thumbnail);
+        return m;
+    }
+
+    long folder(String name) {
+        return folderRepository.save(new Folder(name, FolderColor.mint)).getId();
+    }
+
+    long createWith(String title, Long folderId) throws Exception {
+        String res = mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON)
+                        .content(json(noteMap(title, folderId, null))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return ((Number) JsonPath.read(res, "$.id")).longValue();
+    }
+
+    @Test
+    void create_withFolder_returnsFolderId() throws Exception {
+        long folderId = folder("자료구조");
+
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리", folderId, null))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.folderId").value(folderId));
+    }
+
+    @Test
+    void create_unknownFolder_returns404() throws Exception {
+        mvc.perform(post("/api/notes").contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리", 999999L, null))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("폴더를 찾을 수 없습니다. id=999999"));
+    }
+
+    @Test
+    void update_keepsFolder() throws Exception {
+        long folderId = folder("자료구조");
+        long id = createWith("트리", folderId);
+
+        mvc.perform(put("/api/notes/" + id).contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리(수정)", null, null))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.folderId").value(folderId));
+    }
+
+    @Test
+    void update_withThumbnail_listShowsIt() throws Exception {
+        long id = createWith("트리", null);
+
+        mvc.perform(put("/api/notes/" + id).contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리", null, THUMB))))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/notes"))
+                .andExpect(jsonPath("$[0].thumbnail").value(THUMB))
+                .andExpect(jsonPath("$[0].content").doesNotExist());
+    }
+
+    @Test
+    void update_nullThumbnail_keepsPrevious() throws Exception {
+        long id = createWith("트리", null);
+        mvc.perform(put("/api/notes/" + id).contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리", null, THUMB))));
+
+        mvc.perform(put("/api/notes/" + id).contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리2", null, null))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.thumbnail").value(THUMB));
+    }
+
+    @Test
+    void update_invalidThumbnail_returns400() throws Exception {
+        long id = createWith("트리", null);
+
+        mvc.perform(put("/api/notes/" + id).contentType(MediaType.APPLICATION_JSON).content(json(noteMap("트리", null, "http://example.com/a.png"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("썸네일 형식이 올바르지 않습니다."));
+    }
+
+    @Test
+    void moveToFolder_changesFolder() throws Exception {
+        long folderId = folder("운영체제");
+        long id = createWith("스케줄링", null);
+
+        mvc.perform(patch("/api/notes/" + id + "/folder").contentType(MediaType.APPLICATION_JSON).content("{\"folderId\":" + folderId + "}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.folderId").value(folderId))
+                .andExpect(jsonPath("$.content").doesNotExist());
+    }
+
+    @Test
+    void moveToFolder_null_unfiles() throws Exception {
+        long id = createWith("스케줄링", folder("운영체제"));
+
+        mvc.perform(patch("/api/notes/" + id + "/folder").contentType(MediaType.APPLICATION_JSON).content("{\"folderId\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.folderId").doesNotExist());
+    }
+
+    @Test
+    void moveToFolder_unknownFolder_returns404() throws Exception {
+        long id = createWith("스케줄링", null);
+
+        mvc.perform(patch("/api/notes/" + id + "/folder").contentType(MediaType.APPLICATION_JSON).content("{\"folderId\":999999}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("폴더를 찾을 수 없습니다. id=999999"));
+    }
+
+    @Test
+    void moveToFolder_unknownNote_returns404() throws Exception {
+        mvc.perform(patch("/api/notes/999999/folder").contentType(MediaType.APPLICATION_JSON).content("{\"folderId\":null}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("노트를 찾을 수 없습니다. id=999999"));
     }
