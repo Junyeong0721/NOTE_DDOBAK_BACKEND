@@ -5,6 +5,8 @@ import kr.study.ddobak.note.InvalidContentException;
 import kr.study.ddobak.note.InvalidThumbnailException;
 import kr.study.ddobak.note.NoteNotFoundException;
 import kr.study.ddobak.ocr.InvalidImageException;
+import kr.study.ddobak.ocr.OcrFailedException;
+import kr.study.ddobak.ocr.OcrLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -40,6 +42,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidImageException.class)
     public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException e) {
         return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(OcrLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleOcrLimit(OcrLimitExceededException e) {
+        return error(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+    }
+
+    @ExceptionHandler(OcrFailedException.class)
+    public ResponseEntity<ErrorResponse> handleOcrFailed(OcrFailedException e) {
+        return error(HttpStatus.BAD_GATEWAY, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

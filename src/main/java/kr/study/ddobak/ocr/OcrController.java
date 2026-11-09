@@ -18,6 +18,7 @@ public class OcrController {
     private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
 
     private final OcrClient ocrClient;
+    private final OcrUsageLimiter usageLimiter;
 
     @PostMapping("/line")
     public OcrResult recognizeLine(@Valid @RequestBody OcrLineRequest req) {
@@ -29,6 +30,7 @@ public class OcrController {
                 || !Arrays.equals(Arrays.copyOf(png, PNG_SIGNATURE.length), PNG_SIGNATURE)) {
             throw new InvalidImageException("이미지 형식이 올바르지 않습니다.");
         }
+        usageLimiter.acquire(); // 올바른 요청만 센다
         return ocrClient.recognize(png, req.width(), req.height());
     }
 

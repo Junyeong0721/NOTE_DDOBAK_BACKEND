@@ -38,3 +38,6 @@ out/
 
 ### Local H2 database ###
 data/
+
+### 비밀 값 (API 키) — 절대 올리지 않음 ###
+secret.yaml
