@@ -18,3 +18,11 @@ spring:
   h2:
     console:
       enabled: true
+
+ddobak:
+  ocr:
+    # 하루 글자 인식 횟수 상한 (Google Vision 무료 월 1,000번 안에 들도록 30번)
+    daily-limit: ${OCR_DAILY_LIMIT:30}
+    google:
+      # PC 환경 변수에서만 읽는다. 비어 있으면 가짜 응답을 쓴다. 키를 이 파일에 직접 쓰지 말 것!
+      api-key: ${GOOGLE_VISION_API_KEY:}
