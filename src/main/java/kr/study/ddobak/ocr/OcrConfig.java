@@ -11,7 +11,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * API 키가 있으면 Google Cloud Vision, 없으면 가짜 응답을 쓴다.
- * 키는 PC 환경 변수 GOOGLE_VISION_API_KEY에서만 읽는다 (저장소에 넣지 않음).
+ * 키는 백엔드 폴더의 secret.yaml(.gitignore) 또는 PC 환경 변수 GOOGLE_VISION_API_KEY에서 읽는다 (저장소에 넣지 않음).
  */
 @Slf4j
 @Configuration
@@ -20,7 +20,7 @@ public class OcrConfig {
     @Bean
     OcrClient ocrClient(@Value("${ddobak.ocr.google.api-key:}") String apiKey, JsonMapper jsonMapper) {
         if (apiKey == null || apiKey.isBlank()) {
-            log.info("글자 인식: 가짜 응답 (환경 변수 GOOGLE_VISION_API_KEY 없음)");
+            log.info("글자 인식: 가짜 응답 (secret.yaml이나 환경 변수에 API 키 없음)");
             return new FakeOcrClient();
         }
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

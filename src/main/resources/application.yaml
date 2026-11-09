@@ -7,6 +7,9 @@ server:
 spring:
   application:
     name: ddobak
+  config:
+    # 백엔드 폴더의 secret.yaml(API 키 등, GitHub에 안 올라감)이 있으면 읽는다. 없어도 괜찮다.
+    import: optional:file:./secret.yaml
   datasource:
     url: jdbc:h2:file:./data/ddobak
     username: sa
@@ -24,5 +27,6 @@ ddobak:
     # 하루 글자 인식 횟수 상한 (Google Vision 무료 월 1,000번 안에 들도록 30번)
     daily-limit: ${OCR_DAILY_LIMIT:30}
     google:
-      # PC 환경 변수에서만 읽는다. 비어 있으면 가짜 응답을 쓴다. 키를 이 파일에 직접 쓰지 말 것!
+      # 키는 secret.yaml에 적는다(이 값을 덮어씀). 없으면 PC 환경 변수 GOOGLE_VISION_API_KEY, 그것도 없으면 가짜 응답.
+      # 이 파일은 GitHub에 올라가니까 키를 여기에 직접 쓰지 말 것!
       api-key: ${GOOGLE_VISION_API_KEY:}
