@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import lombok.AccessLevel;
@@ -42,6 +44,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
+    @JdbcTypeCode(SqlTypes.VARCHAR) // MySQL enum 대신 글자로: 나중에 값을 추가해도 표를 고칠 필요가 없다
     private AuthProvider provider;
 
     /** 소셜 로그인 서비스가 준 회원 번호 */

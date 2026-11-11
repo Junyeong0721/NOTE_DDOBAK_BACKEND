@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,6 +34,7 @@ public class Folder {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @JdbcTypeCode(SqlTypes.VARCHAR) // MySQL enum 대신 글자로: 나중에 값을 추가해도 표를 고칠 필요가 없다
     private FolderColor color;
 
     @Column(nullable = false, updatable = false)

@@ -21,16 +21,20 @@ spring:
     # 백엔드 폴더의 secret.yaml(API 키 등, GitHub에 안 올라감)이 있으면 읽는다. 없어도 괜찮다.
     import: optional:file:./secret.yaml
   datasource:
-    url: jdbc:h2:file:./data/ddobak
-    username: sa
-    password: ""
+    # MySQL (PC에 설치, docs/mysql-setup.md). 비밀번호는 secret.yaml에 (GitHub에 안 올라감)
+    url: jdbc:mysql://localhost:3306/ddobak?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${DB_USERNAME:ddobak}
+    password: ${DB_PASSWORD:}
   jpa:
     hibernate:
+      # 서버가 켜질 때 엔티티에 맞게 표·칸을 만들거나 추가한다 (지우지는 않는다)
       ddl-auto: update
     open-in-view: false
-  h2:
-    console:
-      enabled: true
+    properties:
+      hibernate:
+        # 시각은 UTC로 저장 (Instant)
+        jdbc:
+          time_zone: UTC
 
 ddobak:
   auth:

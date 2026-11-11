@@ -24,6 +24,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Note {
 
+    /** MySQL longtext가 되도록 하는 길이 (16MB 넘으면 longtext) */
+    static final int MAX_TEXT = 1_000_000_000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,9 +41,12 @@ public class Note {
     @Column(nullable = false, length = 100)
     private String title;
 
-    /** 프론트가 만든 필기 데이터(JSON 문자열). 획이 많으면 커지므로 길이 제한 없이 저장한다. */
+    /**
+     * 프론트가 만든 필기 데이터(JSON 문자열). 획이 많으면 커진다.
+     * length를 크게 줘야 MySQL에서 longtext가 된다 (안 주면 255바이트짜리 tinytext가 돼서 저장이 실패한다).
+     */
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, length = Note.MAX_TEXT)
     private String content;
 
     /** 폴더 id. null이면 미분류 */
@@ -49,6 +55,7 @@ public class Note {
 
     /** 목록용 첫 페이지 미리보기 (PNG data URL) */
     @Lob
+    @Column(length = Note.MAX_TEXT)
     private String thumbnail;
 
     @Column(nullable = false, updatable = false)
