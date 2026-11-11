@@ -25,8 +25,8 @@ public class Folder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 주인 회원 번호 (로그인 기능 전에 만든 폴더는 null → 보이지 않음) */
-    @Column(name = "user_id")
+    /** 주인 회원 번호 */
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(nullable = false, length = 30)

@@ -25,7 +25,12 @@ CREATE USER 'ddobak'@'localhost' IDENTIFIED BY '여기에_DB_비밀번호';
 GRANT ALL PRIVILEGES ON ddobak.* TO 'ddobak'@'localhost';
 ```
 
-`Query OK`가 세 번 나오면 끝이에요. 표는 백엔드가 켜질 때 자동으로 만들어요(`ddl-auto: update`).
+`Query OK`가 세 번 나오면 끝이에요.
+
+표(`users`, `folder`, `note`)는 직접 만들지 않아도 돼요. 표 설계는 백엔드 저장소의 `src/main/resources/db/migration/V1__create_tables.sql`에 있고, 백엔드가 켜질 때 **Flyway**가 아직 실행하지 않은 설계 파일만 순서대로 실행해요. 실행 기록은 `flyway_schema_history` 표에 남아요.
+그다음 서버는 코드(엔티티)와 표가 맞는지 확인하고(`ddl-auto: validate`), 다르면 켜지지 않아요.
+
+표를 바꾸고 싶을 때는 이미 실행한 V1 파일을 고치지 말고 `V2__무엇을_바꾸는지.sql`을 새로 만들어요.
 
 ## 3. 백엔드에 비밀번호 알려 주기
 
@@ -44,10 +49,12 @@ spring:
 | `Communications link failure` | MySQL이 꺼져 있음 | Windows 검색 → "서비스" → `MySQL84` 시작 |
 | `Access denied for user 'ddobak'@'localhost'` | 비밀번호가 다름 | `secret.yaml`의 비밀번호 확인 |
 | `Unknown database 'ddobak'` | 2번을 안 함 | 2번의 SQL 실행 |
+| `Found non-empty schema(s) ... without schema history table` | Flyway 전에 다른 방법으로 만든 표가 이미 있음 | DataGrip에서 `DROP DATABASE ddobak;` 후 2번의 첫 줄(`CREATE DATABASE ...`)과 `GRANT ...`를 다시 실행 |
+| `Schema validation: missing column ...` | 코드와 표 설계가 다름 | 개발 쪽에 알려 주세요 (V2 설계 파일이 필요) |
 
 ## 안을 들여다보고 싶으면
 
-DataGrip: 서버를 한 번 켠 뒤 연결을 새로고침(Ctrl+F5) → `ddobak` → `tables` (`users`, `note`, `folder`).
+DataGrip: 서버를 한 번 켠 뒤 연결을 새로고침(Ctrl+F5) → `ddobak` → `tables` (`users`, `note`, `folder`, `flyway_schema_history`). 표를 우클릭 → Diagrams → Show Diagram 하면 표 사이 관계(외래 키)도 그림으로 볼 수 있어요.
 
 Command Line Client에서는:
 
