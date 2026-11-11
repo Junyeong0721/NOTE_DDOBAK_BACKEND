@@ -1,5 +1,8 @@
 package kr.study.ddobak.common;
 
+import kr.study.ddobak.auth.DuplicateEmailException;
+import kr.study.ddobak.auth.InvalidLoginException;
+import kr.study.ddobak.auth.UnauthorizedException;
 import kr.study.ddobak.folder.FolderNotFoundException;
 import kr.study.ddobak.note.InvalidContentException;
 import kr.study.ddobak.note.InvalidThumbnailException;
@@ -18,6 +21,21 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException e) {
+        return error(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidLoginException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidLogin(InvalidLoginException e) {
+        return error(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException e) {
+        return error(HttpStatus.CONFLICT, e.getMessage());
+    }
 
     @ExceptionHandler(NoteNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NoteNotFoundException e) {

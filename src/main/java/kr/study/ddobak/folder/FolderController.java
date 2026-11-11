@@ -2,6 +2,7 @@ package kr.study.ddobak.folder;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import kr.study.ddobak.auth.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,24 +23,24 @@ public class FolderController {
     private final FolderService folderService;
 
     @GetMapping
-    public List<FolderResponse> list() {
-        return folderService.list();
+    public List<FolderResponse> list(@LoginUser Long userId) {
+        return folderService.list(userId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public FolderResponse create(@Valid @RequestBody FolderRequest req) {
-        return folderService.create(req);
+    public FolderResponse create(@LoginUser Long userId, @Valid @RequestBody FolderRequest req) {
+        return folderService.create(userId, req);
     }
 
     @PutMapping("/{id}")
-    public FolderResponse update(@PathVariable Long id, @Valid @RequestBody FolderRequest req) {
-        return folderService.update(id, req);
+    public FolderResponse update(@LoginUser Long userId, @PathVariable Long id, @Valid @RequestBody FolderRequest req) {
+        return folderService.update(userId, id, req);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        folderService.delete(id);
+    public void delete(@LoginUser Long userId, @PathVariable Long id) {
+        folderService.delete(userId, id);
     }
 }

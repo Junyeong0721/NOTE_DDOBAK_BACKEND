@@ -1,12 +1,30 @@
-# 테스트 전용 설정: 인메모리 DB를 써서 개발용 파일 DB(./data/ddobak)를 건드리지 않는다.
+# 테스트 전용 설정: 메모리 DB(H2, MySQL 호환 모드)를 써서 실제 MySQL을 건드리지 않는다.
 spring:
   application:
     name: ddobak
   datasource:
-    url: jdbc:h2:mem:ddobak-test;DB_CLOSE_DELAY=-1
+    # MySQL 호환 모드: 실제 표 설계 SQL(db/migration)을 그대로 실행해 엔티티와 맞는지 확인한다
+    # 테스트 설정(컨텍스트)마다 새 DB: 같은 표 설계 SQL을 두 번 실행해 "이미 있는 표" 오류가 나지 않게
+    url: jdbc:h2:mem:ddobak-${random.uuid};MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
     username: sa
     password: ""
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
+  # 테스트에서는 Flyway 대신 같은 SQL을 Spring이 직접 실행한다 (새 V2 파일을 만들면 여기에도 추가)
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/migration/V1__create_tables.sql
+
+ddobak:
+  auth:
+    # 테스트에서는 가입을 빠르게 하려고 반복 횟수를 줄인다
+    pbkdf2-iterations: 1000

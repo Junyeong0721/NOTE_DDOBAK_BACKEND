@@ -5,12 +5,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+import kr.study.ddobak.support.TestAuth;
 import tools.jackson.databind.json.JsonMapper;
 
 /** 하루 한도를 1번으로 줄여서 두 번째 요청이 429로 막히는지 본다. */
@@ -18,7 +21,17 @@ import tools.jackson.databind.json.JsonMapper;
 @AutoConfigureMockMvc
 class OcrLimitApiTest {
 
-    @Autowired MockMvc mvc;
+    @Autowired MockMvc baseMvc;
+    @Autowired WebApplicationContext ctx;
+    MockMvc mvc; // 가입·로그인된 세션으로 요청
+    Long userId;
+
+    @BeforeEach
+    void login() throws Exception {
+        TestAuth.LoggedIn login = TestAuth.signup(baseMvc, ctx);
+        mvc = login.mvc();
+        userId = login.userId();
+    }
     @Autowired JsonMapper jsonMapper;
 
     @Test

@@ -3,6 +3,16 @@ server:
   port: 8081
   # 이 PC는 공인 IP라서 외부에서 직접 접속하지 못하게 이 PC 안에서만 연다. (프론트는 Vite 프록시로 접근)
   address: 127.0.0.1
+  servlet:
+    session:
+      # 로그인 유지: 30일. iPad 홈 화면 앱을 닫았다 열어도 로그인돼 있게 쿠키에도 기간을 준다
+      timeout: 30d
+      # 서버를 다시 켜도(코드 수정 후 자동 재시작 포함) 로그인이 풀리지 않게 세션을 파일로 보관
+      persistent: true
+      cookie:
+        http-only: true
+        same-site: lax
+        max-age: 30d
 
 spring:
   application:
@@ -11,18 +21,27 @@ spring:
     # 백엔드 폴더의 secret.yaml(API 키 등, GitHub에 안 올라감)이 있으면 읽는다. 없어도 괜찮다.
     import: optional:file:./secret.yaml
   datasource:
-    url: jdbc:h2:file:./data/ddobak
-    username: sa
-    password: ""
+    # MySQL (PC에 설치, docs/mysql-setup.md). 비밀번호는 secret.yaml에 (GitHub에 안 올라감)
+    url: jdbc:mysql://localhost:3306/ddobak?serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${DB_USERNAME:ddobak}
+    password: ${DB_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: update
+      # 표는 Flyway가 db/migration/*.sql로 만든다. 서버는 엔티티와 표가 맞는지만 확인하고, 다르면 켜지지 않는다
+      ddl-auto: validate
     open-in-view: false
-  h2:
-    console:
-      enabled: true
+    properties:
+      hibernate:
+        # 시각은 UTC로 저장 (Instant → DATETIME(6))
+        jdbc:
+          time_zone: UTC
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
 
 ddobak:
+  auth:
+    # 비밀번호 해시 반복 횟수 (OWASP 권장 PBKDF2-HMAC-SHA256 60만)
+    pbkdf2-iterations: 600000
   ocr:
     # 하루 글자 인식 횟수 상한 (Google Vision 무료 월 1,000번 안에 들도록 30번)
     daily-limit: ${OCR_DAILY_LIMIT:30}
