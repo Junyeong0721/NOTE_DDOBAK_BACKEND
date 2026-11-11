@@ -3,6 +3,16 @@ server:
   port: 8081
   # 이 PC는 공인 IP라서 외부에서 직접 접속하지 못하게 이 PC 안에서만 연다. (프론트는 Vite 프록시로 접근)
   address: 127.0.0.1
+  servlet:
+    session:
+      # 로그인 유지: 30일. iPad 홈 화면 앱을 닫았다 열어도 로그인돼 있게 쿠키에도 기간을 준다
+      timeout: 30d
+      # 서버를 다시 켜도(코드 수정 후 자동 재시작 포함) 로그인이 풀리지 않게 세션을 파일로 보관
+      persistent: true
+      cookie:
+        http-only: true
+        same-site: lax
+        max-age: 30d
 
 spring:
   application:
@@ -23,6 +33,9 @@ spring:
       enabled: true
 
 ddobak:
+  auth:
+    # 비밀번호 해시 반복 횟수 (OWASP 권장 PBKDF2-HMAC-SHA256 60만)
+    pbkdf2-iterations: 600000
   ocr:
     # 하루 글자 인식 횟수 상한 (Google Vision 무료 월 1,000번 안에 들도록 30번)
     daily-limit: ${OCR_DAILY_LIMIT:30}

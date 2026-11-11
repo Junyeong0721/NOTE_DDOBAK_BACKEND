@@ -10,3 +10,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+
+ddobak:
+  auth:
+    # 테스트에서는 가입을 빠르게 하려고 반복 횟수를 줄인다
+    pbkdf2-iterations: 1000

@@ -24,30 +24,30 @@ public class NoteService {
     private final JsonMapper jsonMapper;
 
     @Transactional
-    public NoteResponse create(NoteRequest req) {
+    public NoteResponse create(Long userId, NoteRequest req) {
         validateContent(req.content());
         validateThumbnail(req.thumbnail());
-        validateFolder(req.folderId());
-        Note note = new Note(req.title(), req.content(), req.folderId());
+        validateFolder(userId, req.folderId());
+        Note note = new Note(userId, req.title(), req.content(), req.folderId());
         note.changeThumbnail(req.thumbnail());
         return NoteResponse.from(noteRepository.save(note));
     }
 
-    public NoteResponse get(Long id) {
-        return NoteResponse.from(findNote(id));
+    public NoteResponse get(Long userId, Long id) {
+        return NoteResponse.from(findNote(userId, id));
     }
 
-    public List<NoteSummary> list() {
-        return noteRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt")).stream()
+    public List<NoteSummary> list(Long userId) {
+        return noteRepository.findAllByUserId(userId, Sort.by(Sort.Direction.DESC, "updatedAt")).stream()
                 .map(NoteSummary::from)
                 .toList();
     }
 
     @Transactional
-    public NoteResponse update(Long id, NoteRequest req) {
+    public NoteResponse update(Long userId, Long id, NoteRequest req) {
         validateContent(req.content());
         validateThumbnail(req.thumbnail());
-        Note note = findNote(id);
+        Note note = findNote(userId, id);
         note.update(req.title(), req.content());
         if (req.thumbnail() != null) {
             note.changeThumbnail(req.thumbnail());
@@ -57,25 +57,25 @@ public class NoteService {
     }
 
     @Transactional
-    public NoteSummary moveToFolder(Long id, Long folderId) {
-        Note note = findNote(id);
-        validateFolder(folderId);
+    public NoteSummary moveToFolder(Long userId, Long id, Long folderId) {
+        Note note = findNote(userId, id);
+        validateFolder(userId, folderId);
         note.moveToFolder(folderId);
         noteRepository.flush();
         return NoteSummary.from(note);
     }
 
     @Transactional
-    public void delete(Long id) {
-        noteRepository.delete(findNote(id));
+    public void delete(Long userId, Long id) {
+        noteRepository.delete(findNote(userId, id));
     }
 
-    private Note findNote(Long id) {
-        return noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+    private Note findNote(Long userId, Long id) {
+        return noteRepository.findByIdAndUserId(id, userId).orElseThrow(() -> new NoteNotFoundException(id));
     }
 
-    private void validateFolder(Long folderId) {
-        if (folderId != null && !folderRepository.existsById(folderId)) {
+    private void validateFolder(Long userId, Long folderId) {
+        if (folderId != null && !folderRepository.existsByIdAndUserId(folderId, userId)) {
             throw new FolderNotFoundException(folderId);
         }
     }

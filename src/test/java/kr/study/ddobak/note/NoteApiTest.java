@@ -21,6 +21,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+import kr.study.ddobak.support.TestAuth;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest
@@ -29,13 +31,19 @@ class NoteApiTest {
 
     static final String EMPTY_CONTENT = "{\"version\":1,\"pages\":[{\"strokes\":[]}]}";
 
-    @Autowired MockMvc mvc;
+    @Autowired MockMvc baseMvc;
+    @Autowired WebApplicationContext ctx;
+    MockMvc mvc; // 가입·로그인된 세션으로 요청
+    Long userId;
     @Autowired NoteRepository repository;
     @Autowired FolderRepository folderRepository;
     @Autowired JsonMapper jsonMapper;
 
     @BeforeEach
-    void clean() {
+    void clean() throws Exception {
+        TestAuth.LoggedIn login = TestAuth.signup(baseMvc, ctx);
+        mvc = login.mvc();
+        userId = login.userId();
         repository.deleteAll();
     }
 
@@ -273,7 +281,7 @@ class NoteApiTest {
     }
 
     long folder(String name) {
-        return folderRepository.save(new Folder(name, FolderColor.mint)).getId();
+        return folderRepository.save(new Folder(userId, name, FolderColor.mint)).getId();
     }
 
     long createWith(String title, Long folderId) throws Exception {

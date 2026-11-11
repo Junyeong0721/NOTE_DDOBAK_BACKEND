@@ -16,7 +16,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(indexes = @Index(name = "idx_note_folder", columnList = "folder_id"))
+@Table(indexes = {
+        @Index(name = "idx_note_folder", columnList = "folder_id"),
+        @Index(name = "idx_note_user", columnList = "user_id"),
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Note {
@@ -24,6 +27,13 @@ public class Note {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /**
+     * 주인 회원 번호. 로그인 기능 전에 만든 노트는 주인이 없어(null) 아무에게도 보이지 않는다.
+     * (예전 데이터가 있는 DB에서도 서버가 켜지도록 DB에서는 null을 허용)
+     */
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -47,11 +57,8 @@ public class Note {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public Note(String title, String content) {
-        this(title, content, null);
-    }
-
-    public Note(String title, String content, Long folderId) {
+    public Note(Long userId, String title, String content, Long folderId) {
+        this.userId = userId;
         this.title = title;
         this.content = content;
         this.folderId = folderId;

@@ -23,6 +23,10 @@ public class Folder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** 주인 회원 번호 (로그인 기능 전에 만든 폴더는 null → 보이지 않음) */
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(nullable = false, length = 30)
     private String name;
 
@@ -33,7 +37,8 @@ public class Folder {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    public Folder(String name, FolderColor color) {
+    public Folder(Long userId, String name, FolderColor color) {
+        this.userId = userId;
         this.name = name;
         this.color = color;
     }
