@@ -14,7 +14,9 @@
 
 ## 2. 또박 데이터베이스와 계정 만들기
 
-시작 메뉴에서 **MySQL 8.4 Command Line Client**를 열고 root 비밀번호를 입력한 뒤, 아래를 붙여 넣어요.
+**DataGrip**: + (New) → Data Source → MySQL → Host `localhost`, Port `3306`, User `root`, root 비밀번호 → (드라이버 받기) → Test Connection → OK → 연결 우클릭 → New → Query Console에 아래를 붙여 넣고 전체 선택 후 Ctrl+Enter.
+
+또는 시작 메뉴의 **MySQL 8.4 Command Line Client**를 열고 root 비밀번호를 입력한 뒤 붙여 넣어요.
 `여기에_DB_비밀번호`는 새로 정하는 비밀번호로 바꾸세요. (root 비밀번호와 달라도 돼요)
 
 ```sql
@@ -45,7 +47,9 @@ spring:
 
 ## 안을 들여다보고 싶으면
 
-Command Line Client에서:
+DataGrip: 서버를 한 번 켠 뒤 연결을 새로고침(Ctrl+F5) → `ddobak` → `tables` (`users`, `note`, `folder`).
+
+Command Line Client에서는:
 
 ```sql
 USE ddobak;
