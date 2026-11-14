@@ -29,9 +29,13 @@ class GeminiAdviceClientTest {
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
     static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/test-model:generateContent";
 
-    static final AdviceRequest REQUEST = new AdviceRequest("고운돋움", "가나", true,
-            List.of(new AdviceRequest.CharScore("가", 62, 30, 20, 12, false),
-                    new AdviceRequest.CharScore("나", 0, 0, 0, 0, true)),
+    static final AdviceRequest REQUEST = new AdviceRequest("고운돋움", "단어", true,
+            List.of(new AdviceRequest.Item("가나", 31, List.of(
+                            new AdviceRequest.CharScore("가", 62, 30, 20, 12, false),
+                            new AdviceRequest.CharScore("나", 0, 0, 0, 0, true))),
+                    new AdviceRequest.Item("강의", 90, List.of(
+                            new AdviceRequest.CharScore("강", 90, 45, 23, 22, false),
+                            new AdviceRequest.CharScore("의", 90, 45, 23, 22, false)))),
             Base64.getDecoder().decode(PNG_BASE64));
 
     MockRestServiceServer server;
@@ -58,9 +62,11 @@ class GeminiAdviceClientTest {
                 .andExpect(jsonPath("$.contents[0].parts[0].inline_data.data").value(PNG_BASE64))
                 .andExpect(jsonPath("$.contents[0].parts[1].text").value(allOf(
                         containsString("고운돋움"),
-                        containsString("연습한 글: 가나"),
+                        containsString("연습 단계: 단어, 문제 2개"),
+                        containsString("1번 '가나' (문제 점수 31)"),
+                        containsString("2번 '강의' (문제 점수 90)"),
                         containsString("연한 목표 글자를 보면서"),
-                        containsString("- 가: 합계 62, 모양 30, 위치와 크기 20, 기울기 12"),
+                        containsString("  - 가: 합계 62, 모양 30, 위치와 크기 20, 기울기 12"),
                         containsString("- 나: 쓰지 않음"),
                         containsString("획순은 언급하지 마세요"),
                         containsString("120자 이내"),
@@ -85,7 +91,7 @@ class GeminiAdviceClientTest {
 
     @Test
     void advise_withoutGuide_saysSo() {
-        assertThat(GeminiAdviceClient.prompt(new AdviceRequest("감자꽃", "가", false, List.of(), new byte[0])))
+        assertThat(GeminiAdviceClient.prompt(new AdviceRequest("감자꽃", "글자", false, List.of(), new byte[0])))
                 .contains("목표 글자를 보지 않고 썼습니다.");
     }
 

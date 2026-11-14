@@ -13,10 +13,10 @@ public interface PracticeAttemptRepository extends JpaRepository<PracticeAttempt
 
     List<PracticeAttempt> findTop20ByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
-    /** 연습한 글마다 최고 점수·횟수·마지막 연습 시각 */
+    /** 단계마다 최고 점수·판 수·마지막 연습 시각 */
     @Query("""
-            select new kr.study.ddobak.practice.PracticeBest(a.text, max(a.totalScore), count(a), max(a.createdAt))
-            from PracticeAttempt a where a.userId = :userId group by a.text
+            select new kr.study.ddobak.practice.PracticeBest(a.stage, max(a.totalScore), count(a), max(a.createdAt))
+            from PracticeAttempt a where a.userId = :userId group by a.stage
             """)
     List<PracticeBest> findBestByUserId(@Param("userId") Long userId);
 }

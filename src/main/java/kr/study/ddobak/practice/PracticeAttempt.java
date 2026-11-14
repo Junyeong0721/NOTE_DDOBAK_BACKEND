@@ -14,11 +14,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/** 글씨 연습 한 번의 기록. 표 설계는 db/migration/V2__create_practice_attempt.sql */
+/** 글씨 연습 한 판(랜덤 문제 5개)의 기록. 표 설계는 db/migration/V2__create_practice_attempt.sql + V3__practice_rounds.sql */
 @Entity
 @Table(name = "practice_attempt", indexes = {
         @Index(name = "idx_practice_user_created", columnList = "user_id, created_at"),
-        @Index(name = "idx_practice_user_text", columnList = "user_id, target_text")})
+        @Index(name = "idx_practice_user_stage", columnList = "user_id, stage")})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PracticeAttempt {
@@ -33,12 +33,12 @@ public class PracticeAttempt {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    /** 미리 넣어 둔 세트 이름. 직접 입력한 글이면 null */
-    @Column(name = "set_id", length = 40)
-    private String setId;
+    /** 단계 id: syllable / word / sentence */
+    @Column(nullable = false, length = 20)
+    private String stage;
 
-    /** 연습한 글 */
-    @Column(name = "target_text", nullable = false, length = 30)
+    /** 한 판에 나온 문제들 (줄바꿈으로 이어 붙임) */
+    @Column(name = "target_text", nullable = false, length = 300)
     private String text;
 
     @Column(name = "font_id", nullable = false, length = 40)
@@ -48,11 +48,11 @@ public class PracticeAttempt {
     @Column(nullable = false)
     private boolean guide;
 
-    /** 칸별 획 JSON 배열. 빈칸은 null */
+    /** 문제별 { text, cells, charScores, score } JSON 배열 (다시 보기용) */
     @Column(nullable = false, columnDefinition = LONGTEXT)
     private String strokes;
 
-    /** 글자별 점수 JSON 배열 */
+    /** 문제별 점수 JSON 배열 */
     @Column(name = "char_scores", nullable = false, columnDefinition = LONGTEXT)
     private String charScores;
 
@@ -76,10 +76,10 @@ public class PracticeAttempt {
     private Instant createdAt;
 
     @Builder
-    PracticeAttempt(Long userId, String setId, String text, String fontId, boolean guide, String strokes,
+    PracticeAttempt(Long userId, String stage, String text, String fontId, boolean guide, String strokes,
             String charScores, int totalScore, int shapeScore, int positionScore, int tiltScore) {
         this.userId = userId;
-        this.setId = setId;
+        this.stage = stage;
         this.text = text;
         this.fontId = fontId;
         this.guide = guide;

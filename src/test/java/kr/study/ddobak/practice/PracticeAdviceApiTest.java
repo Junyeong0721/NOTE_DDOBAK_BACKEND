@@ -74,7 +74,7 @@ class PracticeAdviceApiTest {
     }
 
     ResultActions save(String text, boolean withImage) throws Exception {
-        Map<String, Object> body = PracticeApiTest.attempt(text, 64);
+        Map<String, Object> body = PracticeApiTest.round("word", 64, text, "과제");
         if (withImage) body.put("image", IMAGE);
         return mvc.perform(post("/api/practice/attempts").contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(body)));
@@ -86,7 +86,7 @@ class PracticeAdviceApiTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.advice").value("받침을 조금 더 크게 써 보세요."))
                 .andExpect(jsonPath("$.adviceStatus").value("OK"))
-                .andExpect(jsonPath("$.cells.length()").value(3))
+                .andExpect(jsonPath("$.items[0].cells.length()").value(3))
                 .andReturn().getResponse().getContentAsString();
         long id = ((Number) JsonPath.read(res, "$.id")).longValue();
 
@@ -94,14 +94,16 @@ class PracticeAdviceApiTest {
                 .andExpect(jsonPath("$.advice").value("받침을 조금 더 크게 써 보세요."))
                 .andExpect(jsonPath("$.adviceStatus").value("OK"));
 
-        // AI에게는 글씨체 이름, 글, 채점한 글자의 점수와 그림만 간다 (띄어쓰기 칸은 빠짐)
+        // AI에게는 글씨체·단계 이름, 문제별 글과 채점한 글자의 점수, 그림만 간다 (띄어쓰기 칸은 빠짐)
         assertThat(stub.requests).hasSize(1);
         AdviceRequest sent = stub.requests.get(0);
         assertThat(sent.fontLabel()).isEqualTo("고운돋움");
-        assertThat(sent.text()).isEqualTo("강 물");
+        assertThat(sent.stageLabel()).isEqualTo("단어");
         assertThat(sent.guide()).isTrue();
-        assertThat(sent.scores()).extracting(AdviceRequest.CharScore::ch).containsExactly("강", "물");
-        assertThat(sent.scores().get(0)).isEqualTo(new AdviceRequest.CharScore("강", 64, 32, 16, 16, false));
+        assertThat(sent.items()).extracting(AdviceRequest.Item::text).containsExactly("강 물", "과제");
+        assertThat(sent.items().get(0).total()).isEqualTo(64);
+        assertThat(sent.items().get(0).scores()).extracting(AdviceRequest.CharScore::ch).containsExactly("강", "물");
+        assertThat(sent.items().get(0).scores().get(0)).isEqualTo(new AdviceRequest.CharScore("강", 64, 32, 16, 16, false));
         assertThat(sent.png()).startsWith((byte) 0x89, (byte) 'P', (byte) 'N', (byte) 'G');
     }
 

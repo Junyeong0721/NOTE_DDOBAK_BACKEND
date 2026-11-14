@@ -28,5 +28,15 @@ class PracticeSchemaTest {
                 .containsPattern("char_scores\\s+LONGTEXT\\s+NOT NULL")
                 .containsPattern("target_text\\s+VARCHAR\\(30\\)\\s+NOT NULL")
                 .containsPattern("fk_practice_user FOREIGN KEY \\(user_id\\) REFERENCES users \\(id\\) ON DELETE CASCADE");
+
+        String v3;
+        try (var in = getClass().getResourceAsStream("/db/migration/V3__practice_rounds.sql")) {
+            v3 = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        // 한 판에 문제 5개(문장 최대 20자씩)가 줄바꿈으로 이어져 들어가야 한다
+        assertThat(v3)
+                .containsPattern("ADD COLUMN stage VARCHAR\\(20\\) NOT NULL")
+                .containsPattern("MODIFY COLUMN target_text VARCHAR\\(300\\) NOT NULL")
+                .contains("DROP COLUMN set_id");
     }
 }

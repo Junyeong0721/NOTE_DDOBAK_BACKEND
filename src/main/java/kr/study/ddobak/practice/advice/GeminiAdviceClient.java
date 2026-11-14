@@ -66,21 +66,25 @@ public class GeminiAdviceClient implements AdviceClient {
 
     static String prompt(AdviceRequest request) {
         StringBuilder sb = new StringBuilder();
-        sb.append("한글 손글씨 연습 결과입니다. 그림에서 '목표' 줄은 따라 쓸 글씨체(")
+        sb.append("한글 손글씨 연습 결과입니다. 그림에는 문제마다 두 줄이 있습니다: '목표' 줄은 따라 쓸 글씨체(")
                 .append(request.fontLabel())
                 .append(")로 쓴 글자이고, 그 아래 '내 글씨' 줄은 학습자가 같은 칸에 직접 쓴 글씨입니다.\n");
-        sb.append("연습한 글: ").append(request.text()).append('\n');
+        sb.append("연습 단계: ").append(request.stageLabel()).append(", 문제 ").append(request.items().size()).append("개\n");
         sb.append(request.guide() ? "연한 목표 글자를 보면서 따라 썼습니다.\n" : "목표 글자를 보지 않고 썼습니다.\n");
-        sb.append("앱이 계산한 글자별 점수 (모양 50점, 위치와 크기 25점, 기울기 25점 만점):\n");
-        for (AdviceRequest.CharScore s : request.scores()) {
-            sb.append("- ").append(s.ch()).append(": ");
-            if (s.empty()) {
-                sb.append("쓰지 않음\n");
-            } else {
-                sb.append("합계 ").append(s.total())
-                        .append(", 모양 ").append(s.shape())
-                        .append(", 위치와 크기 ").append(s.position())
-                        .append(", 기울기 ").append(s.tilt()).append('\n');
+        sb.append("앱이 계산한 점수 (글자마다 모양 50점, 위치와 크기 25점, 기울기 25점 만점):\n");
+        int n = 1;
+        for (AdviceRequest.Item item : request.items()) {
+            sb.append(n++).append("번 '").append(item.text()).append("' (문제 점수 ").append(item.total()).append(")\n");
+            for (AdviceRequest.CharScore s : item.scores()) {
+                sb.append("  - ").append(s.ch()).append(": ");
+                if (s.empty()) {
+                    sb.append("쓰지 않음\n");
+                } else {
+                    sb.append("합계 ").append(s.total())
+                            .append(", 모양 ").append(s.shape())
+                            .append(", 위치와 크기 ").append(s.position())
+                            .append(", 기울기 ").append(s.tilt()).append('\n');
+                }
             }
         }
         sb.append("""

@@ -49,8 +49,9 @@ public class PracticeController {
         }
         try {
             String label = req.fontLabel() == null || req.fontLabel().isBlank() ? saved.fontId() : req.fontLabel().strip();
+            String stageLabel = PracticeStage.of(saved.stage()).map(PracticeStage::label).orElse(saved.stage());
             String advice = adviceClient.advise(
-                    new AdviceRequest(label, saved.text(), saved.guide(), charScores(saved.text(), req.charScores()), png));
+                    new AdviceRequest(label, stageLabel, saved.guide(), adviceItems(saved.items()), png));
             return practiceService.attachAdvice(userId, saved.id(), advice);
         } catch (RuntimeException e) {
             adviceLimiter.release(userId); // 받지 못한 조언은 오늘 횟수에서 빼지 않는다
@@ -96,17 +97,23 @@ public class PracticeController {
         return png;
     }
 
-    /** 글자와 점수를 짝지어 AI에게 줄 목록으로. 띄어쓰기(null)와 채점하지 않은 글자(skipped)는 뺀다 */
-    private static List<AdviceRequest.CharScore> charScores(String text, JsonNode scores) {
-        int[] chars = text.codePoints().toArray();
-        List<AdviceRequest.CharScore> list = new ArrayList<>();
-        for (int i = 0; i < chars.length && i < scores.size(); i++) {
-            JsonNode s = scores.get(i);
-            if (s == null || !s.isObject() || s.path("skipped").asBoolean(false)) continue;
-            list.add(new AdviceRequest.CharScore(
-                    new String(Character.toChars(chars[i])),
-                    round(s.path("total")), round(s.path("shape")), round(s.path("position")), round(s.path("tilt")),
-                    s.path("empty").asBoolean(false)));
+    /** 문제마다 글자와 점수를 짝지어 AI에게 줄 목록으로. 띄어쓰기(null)와 채점하지 않은 글자(skipped)는 뺀다 */
+    private static List<AdviceRequest.Item> adviceItems(JsonNode items) {
+        List<AdviceRequest.Item> list = new ArrayList<>();
+        for (JsonNode item : items) {
+            String text = item.path("text").asString("").strip();
+            int[] chars = text.codePoints().toArray();
+            JsonNode scores = item.path("charScores");
+            List<AdviceRequest.CharScore> charScores = new ArrayList<>();
+            for (int i = 0; i < chars.length && i < scores.size(); i++) {
+                JsonNode s = scores.get(i);
+                if (s == null || !s.isObject() || s.path("skipped").asBoolean(false)) continue;
+                charScores.add(new AdviceRequest.CharScore(
+                        new String(Character.toChars(chars[i])),
+                        round(s.path("total")), round(s.path("shape")), round(s.path("position")), round(s.path("tilt")),
+                        s.path("empty").asBoolean(false)));
+            }
+            list.add(new AdviceRequest.Item(text, round(item.path("score").path("total")), charScores));
         }
         return list;
     }
