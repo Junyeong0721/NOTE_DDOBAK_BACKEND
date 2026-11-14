@@ -110,6 +110,16 @@
 - 세트 점수 = 채점 대상 칸(공백 제외) 글자 점수의 평균. 항목 점수도 같은 방식으로 평균 후 각 만점 대비 %로 표시
 - 위 숫자(0.30, 0.95, 3모눈, 0.25, 1.6, 3°, 20°)는 `SCORE_TUNING` 상수 하나에 모아 두고, 실제 손글씨로 확인한 뒤 조정한다.
 
+### 4.6 구현하면서 바뀐 점 (11/14)
+
+테스트에서 드러난 문제로 식을 다듬었다. 현재 값은 `src/practice/score.js`의 `SCORE_TUNING`이 기준이다.
+- 겹침은 "근처면 1"이 아니라 거리에 비례(겹치면 1, 6모눈 떨어지면 0). 일치도 0.45~0.9를 모양 0~50점으로
+- 가장 동떨어진 잉크의 거리(3~12모눈)에 따라 모양 점수를 최대 절반까지 깎는다(짧은 획 빠뜨림·엉뚱한 획)
+- 자리 맞춤은 상자 가운데가 아니라 잉크의 무게 중심, 크기 맞춤은 3배까지
+- 기울기를 찾을 때 기울기 1에 일치도 0.1의 손해를 줘서 조금 더 겹친다고 기운 것으로 보지 않는다
+- 모양이 만점의 절반에 못 미치면 위치·기울기 점수도 비례해 줄인다(낙서 방지)
+- 한글이 아닌 글자는 빈칸처럼 다룬다(쓰지도 채점하지도 않음)
+
 ## 5. AI 조언 (Gemini 무료 등급)
 
 ### 5.1 흐름
@@ -146,9 +156,9 @@ CREATE TABLE practice_attempt (
     set_id         VARCHAR(40)  NULL     COMMENT '미리 넣어 둔 세트 id. 직접 입력이면 NULL',
     target_text    VARCHAR(30)  NOT NULL COMMENT '연습한 글 (API에서는 text)',
     font_id        VARCHAR(40)  NOT NULL COMMENT '목표 글씨체',
-    guide          BOOLEAN      NOT NULL COMMENT '가이드를 켜고 썼는지',
+    guide          BIT(1)       NOT NULL COMMENT '가이드를 켜고 썼는지',
     strokes        LONGTEXT     NOT NULL COMMENT '칸별 획 JSON (다시 보기용)',
-    char_scores    TEXT         NOT NULL COMMENT '글자별 점수 JSON',
+    char_scores    LONGTEXT     NOT NULL COMMENT '글자별 점수 JSON',
     total_score    INT          NOT NULL COMMENT '세트 점수 0~100',
     shape_score    INT          NOT NULL COMMENT '모양 % 0~100',
     position_score INT          NOT NULL COMMENT '위치·크기 % 0~100',
