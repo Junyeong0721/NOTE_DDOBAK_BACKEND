@@ -10,6 +10,8 @@ import kr.study.ddobak.note.NoteNotFoundException;
 import kr.study.ddobak.ocr.InvalidImageException;
 import kr.study.ddobak.ocr.OcrFailedException;
 import kr.study.ddobak.ocr.OcrLimitExceededException;
+import kr.study.ddobak.practice.InvalidPracticeException;
+import kr.study.ddobak.practice.PracticeNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,6 +47,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FolderNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleFolderNotFound(FolderNotFoundException e) {
         return error(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(PracticeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePracticeNotFound(PracticeNotFoundException e) {
+        return error(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPracticeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPractice(InvalidPracticeException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(InvalidThumbnailException.class)
@@ -90,7 +102,7 @@ public class GlobalExceptionHandler {
     /** /api/notes/abc 처럼 id 자리에 숫자가 아닌 값이 온 경우 */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
-        return error(HttpStatus.BAD_REQUEST, "잘못된 노트 번호입니다.");
+        return error(HttpStatus.BAD_REQUEST, "잘못된 번호입니다.");
     }
 
     private ResponseEntity<ErrorResponse> error(HttpStatus status, String message) {

@@ -22,7 +22,7 @@ spring:
   sql:
     init:
       mode: always
-      schema-locations: classpath:db/migration/V1__create_tables.sql
+      schema-locations: classpath:db/migration/V1__create_tables.sql, classpath:db/migration/V2__create_practice_attempt.sql
 
 ddobak:
   auth:
