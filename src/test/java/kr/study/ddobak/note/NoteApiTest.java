@@ -188,7 +188,7 @@ class NoteApiTest {
     void get_nonNumericId_returns400() throws Exception {
         mvc.perform(get("/api/notes/abc"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("잘못된 노트 번호입니다."));
+                .andExpect(jsonPath("$.message").value("잘못된 번호입니다."));
     }
 
     // ---------- 목록 ----------
