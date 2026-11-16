@@ -1,5 +1,6 @@
 package kr.study.ddobak.practice;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,9 @@ public interface PracticeAttemptRepository extends JpaRepository<PracticeAttempt
     Optional<PracticeAttempt> findByIdAndUserId(Long id, Long userId);
 
     List<PracticeAttempt> findTop20ByUserIdOrderByCreatedAtDescIdDesc(Long userId);
+
+    /** 약점 글자 계산용: 이 시각 이후 연습, 오래된 것부터 */
+    List<PracticeAttempt> findByUserIdAndCreatedAtAfterOrderByCreatedAtAscIdAsc(Long userId, Instant after);
 
     /** 단계마다 최고 점수·판 수·마지막 연습 시각 */
     @Query("""

@@ -1,5 +1,7 @@
 package kr.study.ddobak.practice;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ public class PracticeService {
     static final int MAX_ITEMS = 5;
     static final int MAX_ITEM_TEXT = 20;
     static final int MAX_STROKES_LENGTH = 2 * 1024 * 1024;
+    static final Duration WEAK_WINDOW = Duration.ofDays(30);
 
     private final PracticeAttemptRepository repository;
     private final JsonMapper jsonMapper;
@@ -88,6 +91,12 @@ public class PracticeService {
 
     public List<PracticeBest> best(Long userId) {
         return repository.findBestByUserId(userId);
+    }
+
+    /** 최근 30일 연습에서 점수가 낮았던 글자 (약점이 큰 것부터) */
+    public List<WeakChar> weak(Long userId) {
+        Instant since = Instant.now().minus(WEAK_WINDOW);
+        return WeakCharCalculator.calculate(repository.findByUserIdAndCreatedAtAfterOrderByCreatedAtAscIdAsc(userId, since), jsonMapper);
     }
 
     private PracticeAttempt find(Long userId, Long id) {

@@ -70,6 +70,11 @@ public class PracticeController {
         return practiceService.get(userId, id);
     }
 
+    @GetMapping("/weak")
+    public List<WeakChar> weak(@LoginUser Long userId) {
+        return practiceService.weak(userId);
+    }
+
     @GetMapping("/best")
     public List<PracticeBest> best(@LoginUser Long userId) {
         return practiceService.best(userId);

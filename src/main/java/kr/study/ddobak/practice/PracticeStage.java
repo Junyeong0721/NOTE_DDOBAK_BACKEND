@@ -7,7 +7,9 @@ import java.util.Optional;
 public enum PracticeStage {
     SYLLABLE("syllable", "글자"),
     WORD("word", "단어"),
-    SENTENCE("sentence", "문장");
+    SENTENCE("sentence", "문장"),
+    /** 연습에서 점수가 낮았던 글자 (WeakCharCalculator) */
+    WEAK("weak", "약점 글자");
 
     private final String id;
     private final String label;
