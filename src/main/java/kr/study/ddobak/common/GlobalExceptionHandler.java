@@ -12,6 +12,8 @@ import kr.study.ddobak.ocr.OcrFailedException;
 import kr.study.ddobak.ocr.OcrLimitExceededException;
 import kr.study.ddobak.practice.InvalidPracticeException;
 import kr.study.ddobak.practice.PracticeNotFoundException;
+import kr.study.ddobak.note.summary.SummaryFailedException;
+import kr.study.ddobak.note.summary.SummaryLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -72,6 +74,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidImageException.class)
     public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException e) {
         return error(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(SummaryLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleSummaryLimit(SummaryLimitExceededException e) {
+        return error(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+    }
+
+    @ExceptionHandler(SummaryFailedException.class)
+    public ResponseEntity<ErrorResponse> handleSummaryFailed(SummaryFailedException e) {
+        return error(HttpStatus.SERVICE_UNAVAILABLE, "지금은 요약을 만들 수 없어요. 잠시 뒤 다시 해 주세요.");
     }
 
     @ExceptionHandler(OcrLimitExceededException.class)

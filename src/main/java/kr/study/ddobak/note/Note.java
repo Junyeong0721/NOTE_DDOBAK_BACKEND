@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-/** 표 설계는 db/migration/V1__create_tables.sql (Flyway). 여기 이름·길이는 그 SQL과 맞춰 둔다 */
+/** 표 설계는 db/migration/V1__create_tables.sql + V4__note_summary.sql (Flyway). 여기 이름·길이는 그 SQL과 맞춰 둔다 */
 @Table(indexes = @Index(name = "idx_note_user_updated", columnList = "user_id, updated_at"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -46,6 +46,14 @@ public class Note {
     /** 목록용 첫 페이지 미리보기 (PNG data URL) */
     @Column(columnDefinition = Note.LONGTEXT)
     private String thumbnail;
+
+    /** AI 요약 3~5줄 (줄바꿈으로 이어 붙임). 아직 없으면 null — NoteRepository.saveSummary로만 바꾼다 */
+    @Column(length = 1000)
+    private String summary;
+
+    /** 요약을 만든 시각. updatedAt이 이보다 뒤면 요약 뒤에 필기가 바뀐 것 */
+    @Column(name = "summarized_at")
+    private Instant summarizedAt;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
