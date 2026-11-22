@@ -1,5 +1,7 @@
 package kr.study.ddobak.note;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import kr.study.ddobak.folder.FolderNotFoundException;
 import kr.study.ddobak.folder.FolderRepository;
@@ -63,6 +65,16 @@ public class NoteService {
         note.moveToFolder(folderId);
         noteRepository.flush();
         return NoteSummary.from(note);
+    }
+
+    /** AI 요약 저장 (노트 수정 시각은 그대로). 저장한 시각을 돌려준다 */
+    @Transactional
+    public Instant saveSummary(Long userId, Long id, String summary) {
+        Instant at = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (noteRepository.saveSummary(id, userId, summary, at) == 0) {
+            throw new NoteNotFoundException(id);
+        }
+        return at;
     }
 
     @Transactional

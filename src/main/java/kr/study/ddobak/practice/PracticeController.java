@@ -2,10 +2,9 @@ package kr.study.ddobak.practice;
 
 import jakarta.validation.Valid;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import kr.study.ddobak.auth.LoginUser;
+import kr.study.ddobak.common.PngDataUrl;
 import kr.study.ddobak.practice.advice.AdviceClient;
 import kr.study.ddobak.practice.advice.AdviceRequest;
 import kr.study.ddobak.practice.advice.AdviceUsageLimiter;
@@ -27,9 +26,7 @@ import tools.jackson.databind.JsonNode;
 @RequiredArgsConstructor
 public class PracticeController {
 
-    static final String IMAGE_PREFIX = "data:image/png;base64,";
     static final int MAX_IMAGE_BYTES = 1024 * 1024;
-    private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
 
     private final PracticeService practiceService;
     private final AdviceClient adviceClient;
@@ -83,23 +80,11 @@ public class PracticeController {
     /** 조언용 그림. 없으면 null(조언 없이 저장), 있는데 PNG가 아니거나 너무 크면 400 */
     private static byte[] decodeImage(String image) {
         if (image == null || image.isBlank()) return null;
-        if (!image.startsWith(IMAGE_PREFIX)) {
-            throw new InvalidPracticeException("그림 형식이 올바르지 않습니다.");
-        }
-        byte[] png;
         try {
-            png = Base64.getDecoder().decode(image.substring(IMAGE_PREFIX.length()));
+            return PngDataUrl.decode(image, MAX_IMAGE_BYTES);
         } catch (IllegalArgumentException e) {
-            throw new InvalidPracticeException("그림 형식이 올바르지 않습니다.");
+            throw new InvalidPracticeException(e.getMessage());
         }
-        if (png.length > MAX_IMAGE_BYTES) {
-            throw new InvalidPracticeException("그림이 너무 큽니다.");
-        }
-        if (png.length < PNG_SIGNATURE.length
-                || !Arrays.equals(Arrays.copyOf(png, PNG_SIGNATURE.length), PNG_SIGNATURE)) {
-            throw new InvalidPracticeException("그림 형식이 올바르지 않습니다.");
-        }
-        return png;
     }
 
     /** 문제마다 글자와 점수를 짝지어 AI에게 줄 목록으로. 띄어쓰기(null)와 채점하지 않은 글자(skipped)는 뺀다 */

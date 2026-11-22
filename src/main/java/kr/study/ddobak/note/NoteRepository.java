@@ -1,5 +1,6 @@
 package kr.study.ddobak.note;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Sort;
@@ -19,4 +20,12 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Note n set n.folderId = null where n.folderId = :folderId")
     int unassignFolder(@Param("folderId") Long folderId);
+
+    /**
+     * AI 요약 저장. 엔티티를 고치면 @PreUpdate가 updatedAt을 바꿔 "요약 뒤에 노트가 바뀌었다"로 보이므로,
+     * 수정 시각을 건드리지 않게 쿼리로 바로 바꾼다.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Note n set n.summary = :summary, n.summarizedAt = :at where n.id = :id and n.userId = :userId")
+    int saveSummary(@Param("id") Long id, @Param("userId") Long userId, @Param("summary") String summary, @Param("at") Instant at);
 }
