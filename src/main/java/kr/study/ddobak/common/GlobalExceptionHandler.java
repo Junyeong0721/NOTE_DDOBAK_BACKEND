@@ -14,6 +14,10 @@ import kr.study.ddobak.practice.InvalidPracticeException;
 import kr.study.ddobak.practice.PracticeNotFoundException;
 import kr.study.ddobak.note.summary.SummaryFailedException;
 import kr.study.ddobak.note.summary.SummaryLimitExceededException;
+import kr.study.ddobak.community.AlreadyReportedException;
+import kr.study.ddobak.community.ForbiddenException;
+import kr.study.ddobak.community.InvalidCommunityException;
+import kr.study.ddobak.community.PostNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -94,6 +98,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OcrFailedException.class)
     public ResponseEntity<ErrorResponse> handleOcrFailed(OcrFailedException e) {
         return error(HttpStatus.BAD_GATEWAY, e.getMessage());
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePostNotFound(PostNotFoundException e) {
+        return error(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException e) {
+        return error(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
+    @ExceptionHandler(AlreadyReportedException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyReported(AlreadyReportedException e) {
+        return error(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCommunityException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCommunity(InvalidCommunityException e) {
+        return error(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
